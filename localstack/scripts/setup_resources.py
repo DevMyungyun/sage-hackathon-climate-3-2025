@@ -1,5 +1,4 @@
 import boto3
-import json
 import os
 
 LOCALSTACK_ENDPOINT = os.environ.get("AWS_ENDPOINT_URL", "http://localhost:4566")
