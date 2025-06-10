@@ -6,10 +6,17 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 
 set -e
 
+echo "Checking if Docker Compose is already running..."
+if docker compose ps | grep 'Up' > /dev/null; then
+  echo "Docker Compose is already running. Restarting containers..."
+  docker compose down
+fi
+
 echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
 echo "Starting LocalStack with Docker Compose..."
+docker compose build --no-cache
 docker-compose up -d
 
 echo "Waiting for LocalStack to be ready..."

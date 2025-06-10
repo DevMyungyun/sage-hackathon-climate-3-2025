@@ -11,6 +11,11 @@ services:
       - backend/.env
     depends_on:
       - localstack
+      - mongodb
+      - elasticsearch
+    networks:
+      - climate3
+    hostname: backend
 
   # frontend:
   #   build:
@@ -22,6 +27,9 @@ services:
   #     - backend
   #   environment:
   #    - REACT_APP_API_URL=http://backend:5000/api
+  #   networks:
+  #     - climate3
+  #   hostname: frontend
 
   localstack:
     image: localstack/localstack:latest
@@ -29,11 +37,56 @@ services:
       - "4566:4566"
       - "4510-4559:4510-4559"
     environment:
-      - SERVICES=s3,apigateway,dynamodb,lambda
+      - SERVICES=s3,lambda
       - DATA_DIR=/tmp/localstack/data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - localstack_data:${PWD}/data/localstack
+    networks:
+      - climate3
+    hostname: localstack
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=changeme
+      - MONGO_INITDB_DATABASE=testdb
+    volumes:
+      - mongo_data:${PWD}/data/mongodb
+    networks:
+      - climate3
+    hostname: mongodb
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=changeme
+      # - network.bind_host=0
+      # - http.cors.allow-origin= "*"
+      # - http.cors.enabled= true
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:${PWD}/data/elasticsearch/data
+    networks:
+      - climate3
+    hostname: elasticsearch
 
 volumes:
   localstack_data:
+  mongo_data:
+  es_data:
+
+networks:
+  climate3:
+    driver: bridge

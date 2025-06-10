@@ -27,3 +27,45 @@ This repository is for Sage Hackathon Climate team 3 in 2025.
   chmod +x restart.sh
   ./restart.sh
   ```
+
+## API Documentation
+
+- **Backend Swagger UI:**  
+  After starting the backend, visit [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation.
+
+## AWS CLI Config for LocalStack
+
+To avoid credential errors when using the AWS CLI with LocalStack, add the following to your `~/.aws/credentials` file:
+
+```
+[localstack]
+aws_access_key_id = test
+aws_secret_access_key = test
+```
+
+And in your `~/.aws/config` file:
+
+```
+[default]
+region = us-east-1
+output = json
+```
+
+This will allow you to use the AWS CLI with LocalStack without real AWS credentials.
+
+## LocalStack S3 Bucket Test
+
+To test S3 bucket access via LocalStack, you can use the AWS CLI:
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls --profile localstack
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket --profile localstack
+aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://my-localstack-bucket/ --profile localstack
+aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/ --profile localstack
+```
+
+Or, you can access the file URL if you want to download uploaded file.
+```
+http://localhost:4566/my-localstack-bucket/<you-file-name>
+```
+
