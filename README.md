@@ -35,33 +35,30 @@ This repository is for Sage Hackathon Climate team 3 in 2025.
 
 ## AWS CLI Config for LocalStack
 
-To avoid credential errors when using the AWS CLI with LocalStack, add the following to your `~/.aws/credentials` file:
-
+You can install aws by using the following command if it’s not already installed.
 ```
-[localstack]
-aws_access_key_id = test
-aws_secret_access_key = test
+pip install awscli
 ```
 
-And in your `~/.aws/config` file:
-
+Configuring an endpoint URL
+You can use AWS CLI with an endpoint URL by configuring test environment variables and include the --endpoint-url=<localstack-url> flag in your aws CLI commands. For example:
 ```
-[default]
-region = us-east-1
-output = json
-```
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test"
+export AWS_DEFAULT_REGION="us-east-1"
 
-This will allow you to use the AWS CLI with LocalStack without real AWS credentials.
+aws --endpoint-url=http://localhost:4566 s3 ls
+```
 
 ## LocalStack S3 Bucket Test
 
 To test S3 bucket access via LocalStack, you can use the AWS CLI:
 
 ```bash
-aws --endpoint-url=http://localhost:4566 s3 ls --profile localstack
-aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket --profile localstack
-aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://my-localstack-bucket/ --profile localstack
-aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/ --profile localstack
+aws --endpoint-url=http://localhost:4566 s3 ls
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket
+aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://my-localstack-bucket/
+aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/
 ```
 
 Or, you can access the file URL if you want to download uploaded file.
