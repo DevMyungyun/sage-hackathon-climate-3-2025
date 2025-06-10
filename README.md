@@ -63,6 +63,6 @@ aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/
 
 Or, you can access the file URL if you want to download uploaded file.
 ```
-http://localhost:4566/my-localstack-bucket/<you-file-name>
+http://localhost:4566/<bucket-name>/<your-file-name>
 ```
 

@@ -26,7 +26,7 @@ app = FastAPI(
 
 # AWS LocalStack configuration
 S3_ENDPOINT = os.environ.get("S3_ENDPOINT", "http://localstack:4566")
-S3_BUCKET = os.environ.get("S3_BUCKET", "my-localstack-bucket")
+S3_BUCKETS = os.environ.get("S3_BUCKETS", "landing,scripts,builds").split(",")
 
 session = boto3.Session(
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "test"),
@@ -136,11 +136,6 @@ def delete_todo(todo_id: str):
         return JSONResponse(content="", status_code=204)
     raise HTTPException(status_code=404, detail="Todo not found")
 
-@app.post("/api/upload")
-def upload_file(file: UploadFile = File(...)):
-    s3.Bucket(S3_BUCKET).put_object(Key=file.filename, Body=file.file)
-    return {"message": f"Uploaded {file.filename} to S3"}
-
 @app.post("/api/es/index")
 def index_document(index: str, document: dict):
     """Index a document into Elasticsearch."""
@@ -167,16 +162,41 @@ def find_documents():
         doc["_id"] = str(doc["_id"])
     return docs
 
-@app.get("/api/s3/read/{filename}")
-def read_file_from_s3(filename: str):
-    """
-    Read a file from the S3 bucket and return its contents.
-    """
+def get_bucket(bucket_name: str):
+    if bucket_name not in S3_BUCKETS:
+        raise HTTPException(status_code=404, detail=f"Bucket '{bucket_name}' not allowed")
+    return s3.Bucket(bucket_name)
+
+@app.post("/api/s3/{bucket_name}/upload")
+def upload_file_to_bucket(bucket_name: str, file: UploadFile = File(...)):
+    bucket = get_bucket(bucket_name)
+    bucket.put_object(Key=file.filename, Body=file.file)
+    return {"message": f"Uploaded {file.filename} to {bucket_name}"}
+
+@app.get("/api/s3/{bucket_name}/download/{filename}")
+def download_file_from_bucket(bucket_name: str, filename: str):
+    bucket = get_bucket(bucket_name)
     try:
-        obj = s3.Bucket(S3_BUCKET).Object(filename).get()
+        obj = bucket.Object(filename).get()
         content = obj['Body'].read()
-        return Response(content, media_type="application/octet-stream")
+        return Response(
+            content,
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"File not found in S3: {e}")
+        raise HTTPException(status_code=404, detail=f"File not found in {bucket_name}: {e}")
+
+@app.get("/api/s3/{bucket_name}/read")
+def list_files_in_bucket(bucket_name: str):
+    """
+    List all files in the specified S3 bucket.
+    """
+    bucket = get_bucket(bucket_name)
+    try:
+        files = [obj.key for obj in bucket.objects.all()]
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=f"Could not list files in {bucket_name}: {e}")
 
 # To run: uvicorn app:app --host 0.0.0.0 --port 8000
