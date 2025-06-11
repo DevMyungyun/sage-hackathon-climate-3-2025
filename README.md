@@ -12,6 +12,17 @@ This repository is for Sage Hackathon Climate team 3 in 2025.
 
 ## Setup Instructions
 
+## Docker
+Verify you have docker installed and the docker daemon running.
+
+To install docker, use https://www.docker.com/get-started/ documentation.
+
+
+## Python environment
+It's also recommended to use a Python virtual environment.
+
+Python virtual environments documentation https://docs.python.org/3/library/venv.html.
+
 
 ## AWS CLI Config for LocalStack
 
@@ -20,31 +31,46 @@ You can install aws by using the following command if it’s not already install
 pip install awscli
 ```
 
-Configuring an endpoint URL  
+## Configuring an endpoint URL  
 You can use AWS CLI with an endpoint URL by configuring test environment variables and include the --endpoint-url=<localstack-url> flag in your aws CLI commands. For example:
 ```
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 export AWS_DEFAULT_REGION="us-east-1"
+export AWS_ENDPOINT_URL=http://localhost:4566
 
-aws --endpoint-url=http://localhost:4566 s3 ls
 ```
 
 ## LocalStack S3 Bucket Test
 
 To test S3 bucket access via LocalStack, you can use the AWS CLI:
 
+List S3 bucket content. Spoiler alert: will return nothing because the bucket is empty.
 ```bash
 aws --endpoint-url=http://localhost:4566 s3 ls
+```
+
+Let's create a bucket.
+```bash
 aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket
-aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://my-localstack-bucket/
+```
+
+And add a file (just for testing purposes).
+```bash
+aws --endpoint-url=http://localhost:4566 s3 cp requirements.txt s3://my-localstack-bucket/
+```
+
+Let's list the bucket again, it should show the bucket and file created before.
+```bash
 aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/
 ```
 
-Or, you can access the file URL if you want to download uploaded file.
+Or, you can access the file URL if you want to download uploaded file using http://localhost:4566/<bucket-name>/<your-file-name>.
 ```
-http://localhost:4566/<bucket-name>/<your-file-name>
+http://localhost:4566/my-localstack-bucket/requirements.txt
 ```
+
+## LocalStack Setup
 
 - **infra_setup.sh**  
   Installs Python dependencies, starts LocalStack and other services, and sets up AWS resources in LocalStack.
