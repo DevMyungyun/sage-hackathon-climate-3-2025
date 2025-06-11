@@ -39,6 +39,9 @@ services:
     environment:
       - SERVICES=s3,lambda
       - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT=30
+      - LAMBDA_EXECUTOR=docker-reuse
+      - LAMBDA_DOCKER_NETWORK=climate3
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - localstack_data:${PWD}/data/localstack

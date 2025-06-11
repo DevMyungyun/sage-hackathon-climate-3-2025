@@ -1,2 +1,17 @@
 # localstack 
 data
+
+# lambda Workspace
+lambda_workspace/output/**
+lambda_workspace/**/*.py
+lambda_workspace/**/*.js
+lambda_workspace/**/*.ts
+lambda_workspace/**/*.java
+lambda_workspace/**/*.cs
+lambda_workspace/**/*.rb
+lambda_workspace/**/*.go
+lambda_workspace/**/*.php
+lambda_workspace/**/*.cpp
+lambda_workspace/**/*.c
+lambda_workspace/**/*.rs
+lambda_workspace/**/*.zip
