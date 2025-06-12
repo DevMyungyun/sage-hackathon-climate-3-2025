@@ -77,14 +77,6 @@ aws --endpoint-url=http://localhost:4566 s3 ls
   ./infra_setup.sh
   ```
 
-- **infra_restart.sh**  
-  Stops all Docker Compose services, rebuilds all images without using the cache, and restarts the services in detached mode.
-  
-  ```bash
-  chmod +x infra_restart.sh
-  ./infra_restart.sh
-  ```
-
 #### LocalStack S3 Bucket Test
 
 To test S3 bucket access via LocalStack, you can use the AWS CLI:
