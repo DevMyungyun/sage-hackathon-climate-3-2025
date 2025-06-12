@@ -12,10 +12,25 @@ services:
     depends_on:
       - localstack
       - mongodb
-      - elasticsearch
     networks:
       - climate3
     hostname: backend
+
+  sync-webhook:
+    build:
+      context: ./sync-webhook
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    env_file:
+      - sync-webhook/.env
+    depends_on:
+      - localstack
+      - mongodb
+      - backend
+    networks:
+      - climate3
+    hostname: sync-webhook
 
   # frontend:
   #   build:
@@ -64,31 +79,9 @@ services:
       - climate3
     hostname: mongodb
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - xpack.security.enabled=false
-      - ELASTIC_USERNAME=elastic
-      - ELASTIC_PASSWORD=changeme
-      # - network.bind_host=0
-      # - http.cors.allow-origin= "*"
-      # - http.cors.enabled= true
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:${PWD}/data/elasticsearch/data
-    networks:
-      - climate3
-    hostname: elasticsearch
-
 volumes:
   localstack_data:
   mongo_data:
-  es_data:
 
 networks:
   climate3:

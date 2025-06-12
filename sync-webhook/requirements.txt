@@ -3,5 +3,4 @@ uvicorn
 boto3
 python-multipart
 pymongo
-requests
 pandas

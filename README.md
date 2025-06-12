@@ -62,6 +62,16 @@ http://localhost:4566/<bucket-name>/<your-file-name>
   ./infra_restart.sh
   ```
 
+## API Documentation
+
+- **Backend Swagger UI:**  
+  After starting the backend, visit [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation.
+
+- **Sync Webhook Swagger UI:**  
+  After starting the backend, visit [http://localhost:9000/docs](http://localhost:8000/docs) for interactive API documentation.
+
+## Additional tool for Localstack 
+
 - **create_lambda_func.sh**  
   Interactive script to create a Lambda function in LocalStack.  
   It lets you select runtime, zip file (from `./lambda_workspace`), handler, role, and tags (including required `_custom_id_`). You can place your archive the code to zip file under `./lambda_workspace` folder. This script will pick up your created zip file.
@@ -100,7 +110,6 @@ http://localhost:4566/<bucket-name>/<your-file-name>
   }
   Note: You must specify the _custom_id_ tag before creating a Function URL. After the URL configuration is set up, any modifications to the tag will not affect it.
   ```
-
 
 - **update_lambda_func_code.sh**  
   Interactive script to update Lambda function code in LocalStack.  
@@ -147,8 +156,3 @@ http://localhost:4566/<bucket-name>/<your-file-name>
   Enter payload as JSON (e.g., '{"body": "{\"num1\": \"10\", \"num2\": \"10\"}" }'): '{"body": "{\"num1\": \"10\", \"num2\": \"10\"}" }'
   Enter output file name (e.g., output.txt): output_01.json
   ```
-
-## API Documentation
-
-- **Backend Swagger UI:**  
-  After starting the backend, visit [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API documentation.
