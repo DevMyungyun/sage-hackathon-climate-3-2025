@@ -1,8 +1,23 @@
 # sage-hackathon-climate-3-2025
 This repository is for Sage Hackathon Climate team 3 in 2025.
 
-# R script naming pattern
-R script naming has to be match with `COUNTRY-YEAR-VERSION.R(or .r)` pattern. The example name is like this `Malawi-2023-v1.R`.
+## Bucket Structure
+
+The platform will need three main buckets:
+- **landing** – storing raw dataset files. It should have the following structure: 
+
+`landing > country_name > district > source`
+
+- **scripts** – storing R scripts.
+- **build** – storing processed dataset after been transformed by the R scripts. It should have the following structure:
+
+`build > country_name > district > source`
+
+## Naming Conventions
+
+- Dataset naming should have (at least) the date when it was exported following the pattern `YYYY-MM-DD`.
+- R script naming has to be match with `country name-YYYY-version.R(or .r)` pattern. The example name is like this `Malawi-2023-v1.R`.
+- Processed dataset should have (at least) the date when it was processed and the script name following the pattern `YYYY-MM-DD_COUNTRY-YEAR-VERSION`. The example name is like this `YYYY-MM-DD_Malawi-2023-v1.R`.
 
 ## Tools Used
 
@@ -15,39 +30,44 @@ R script naming has to be match with `COUNTRY-YEAR-VERSION.R(or .r)` pattern. Th
 
 ## Setup Instructions
 
+#### Docker
 
-## AWS CLI Config for LocalStack
+Verify you have docker installed and the docker daemon running.
+
+To install docker, use https://www.docker.com/get-started/ documentation.
+
+
+#### Python environment
+
+It's also recommended to use a Python virtual environment.
+
+Python virtual environments documentation https://docs.python.org/3/library/venv.html.
+
+#### AWS CLI Config for LocalStack
 
 You can install aws by using the following command if it’s not already installed.
 ```
 pip install awscli
 ```
 
-Configuring an endpoint URL  
-You can use AWS CLI with an endpoint URL by configuring test environment variables and include the --endpoint-url=<localstack-url> flag in your aws CLI commands. For example:
+#### Configuring an endpoint URL in infra_setup
+
+In the infra_setup.sh file you can configure test environment variables.
+
 ```
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 export AWS_DEFAULT_REGION="us-east-1"
-
-aws --endpoint-url=http://localhost:4566 s3 ls
+export AWS_ENDPOINT_URL=http://localhost:4566
 ```
 
-## LocalStack S3 Bucket Test
-
-To test S3 bucket access via LocalStack, you can use the AWS CLI:
+Use AWS CLI with an endpoint URL including the --endpoint-url=<localstack-url> flag in your AWS CLI commands. (Mac/Linux) example:
 
 ```bash
 aws --endpoint-url=http://localhost:4566 s3 ls
-aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket
-aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://my-localstack-bucket/
-aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/
 ```
 
-Or, you can access the file URL if you want to download uploaded file.
-```
-http://localhost:4566/<bucket-name>/<your-file-name>
-```
+#### Configuration files (_MAC/Linux_)
 
 - **infra_setup.sh**  
   Installs Python dependencies, starts LocalStack and other services, and sets up AWS resources in LocalStack.
@@ -65,6 +85,35 @@ http://localhost:4566/<bucket-name>/<your-file-name>
   ./infra_restart.sh
   ```
 
+#### LocalStack S3 Bucket Test
+
+To test S3 bucket access via LocalStack, you can use the AWS CLI:
+
+List S3 bucket content. Spoiler alert: will return nothing because the bucket is empty.
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls
+```
+
+Let's create a bucket.
+```bash
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-localstack-bucket
+```
+
+And add a file (just for testing purposes).
+```bash
+aws --endpoint-url=http://localhost:4566 s3 cp requirements.txt s3://my-localstack-bucket/
+```
+
+Let's list the bucket again, it should show the bucket and file created before.
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls s3://my-localstack-bucket/
+```
+
+Or, you can access the file URL if you want to download uploaded file using http://localhost:4566/<bucket-name>/<your-file-name>.
+```
+http://localhost:4566/my-localstack-bucket/requirements.txt
+```
+
 ## API Documentation
 
 - **Backend Swagger UI:**  
@@ -73,7 +122,7 @@ http://localhost:4566/<bucket-name>/<your-file-name>
 - **Sync Webhook Swagger UI:**  
   After starting the backend, visit [http://localhost:9000/docs](http://localhost:8000/docs) for interactive API documentation.
 
-## Additional tool for Localstack 
+## Additional Tool for Localstack 
 
 - **create_lambda_func.sh**  
   Interactive script to create a Lambda function in LocalStack.  
