@@ -1,6 +1,9 @@
 # sage-hackathon-climate-3-2025
 This repository is for Sage Hackathon Climate team 3 in 2025.
 
+# R script naming pattern
+R script naming has to be match with `COUNTRY-YEAR-VERSION.R(or .r)` pattern. The example name is like this `Malawi-2023-v1.R`.
+
 ## Tools Used
 
 - **FastAPI** – Python web framework for building APIs

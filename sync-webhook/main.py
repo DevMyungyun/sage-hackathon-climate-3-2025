@@ -81,20 +81,20 @@ async def startup_event():
 # REST APIs 
 @app.post("/api/webhook/{bucket_name}/sync")
 def sync_file_to_bucket(
-    region: str = Query(..., description="Region name"),
+    country: str = Query(..., description="country name"),
     station: str = Query(..., description="Station name")
 ):
     """
-    1. Find the latest R script for the region in the 'scripts' bucket (region-yyyy-vN.R or .r).
-    2. Read all files under /region/station/climsoft/ in the 'landing' bucket.
+    1. Find the latest R script for the country in the 'scripts' bucket (country-yyyy-vN.R or .r).
+    2. Read all files under /country/station/climsoft/ in the 'landing' bucket.
     3. Process the contents using the R script.
-    4. Store the result in the 'builds' bucket under /region/station/climsoft/.
+    4. Store the result in the 'builds' bucket under /country/station/climsoft/.
     5. Integrate all CSV files in landing bucket and upload the integrated file to both builds and landing buckets.
     """
-    # 1. Find the latest R script for the region in '/region/station/climsoft/' in the 'scripts' bucket
+    # 1. Find the latest R script for the country in '/country/station/climsoft/' in the 'scripts' bucket
     scripts_bucket = get_bucket("scripts")
-    prefix_script = f"{region}/{station}/climsoft/"
-    pattern = re.compile(rf"^{re.escape(prefix_script)}{re.escape(region)}-(\d{{4}})-v(\d+)\.r$", re.IGNORECASE)
+    prefix_script = f"{country}/{station}/climsoft/"
+    pattern = re.compile(rf"^{re.escape(prefix_script)}{re.escape(country)}-(\d{{4}})-v(\d+)\.r$", re.IGNORECASE)
     latest_script = None
     latest_year = -1
     latest_version = -1
@@ -110,7 +110,7 @@ def sync_file_to_bucket(
                 latest_script = obj.key
 
     if not latest_script:
-        raise HTTPException(status_code=404, detail=f"No R script found for region '{region}' in scripts bucket under {prefix_script}")
+        raise HTTPException(status_code=404, detail=f"No R script found for country '{country}' in scripts bucket under {prefix_script}")
 
     # Download the R script to a temp file in /tmp directory
     script_obj = scripts_bucket.Object(latest_script).get()
@@ -119,9 +119,9 @@ def sync_file_to_bucket(
     with open(r_script_path, "w") as r_script_file:
         r_script_file.write(r_script_content)
 
-    # 2. Read latest uploaded files under /region/station/climsoft/ in 'landing' bucket. and download the /tmp/latest_dataset.csv file
+    # 2. Read latest uploaded files under /country/station/climsoft/ in 'landing' bucket. and download the /tmp/latest_dataset.csv file
     landing_bucket = get_bucket("landing")
-    prefix_landing = f"{region}/{station}/climsoft/"
+    prefix_landing = f"{country}/{station}/climsoft/"
     csv_contents = []
     for obj in landing_bucket.objects.filter(Prefix=prefix_landing):
         if obj.key.endswith(".csv"):
@@ -129,8 +129,8 @@ def sync_file_to_bucket(
             csv_contents.append(file_content)
 
     if not csv_contents:
-        raise HTTPException(status_code=404, detail=f"No CSV files found in landing bucket for region '{region}' and station '{station}'")
-    logging.info(f"Found {len(csv_contents)} CSV files in landing bucket for {region}/{station}")
+        raise HTTPException(status_code=404, detail=f"No CSV files found in landing bucket for country '{country}' and station '{station}'")
+    logging.info(f"Found {len(csv_contents)} CSV files in landing bucket for {country}/{station}")
     
     # download the latest dataset CSV file as latest_dataset.csv
     latest_dataset_path = "/tmp/latest_dataset.csv"
@@ -149,11 +149,11 @@ def sync_file_to_bucket(
     except subprocess.CalledProcessError as e:
         raise HTTPException(status_code=500, detail=f"R script execution failed: {e}")
     
-    # 5. Store the /tmp/processed_dataset.csv file renaming dataset_update_yyyymmddhhmmss in 'builds' bucket under /region/station/climsoft/
+    # 5. Store the /tmp/processed_dataset.csv file renaming dataset_update_yyyymmddhhmmss in 'builds' bucket under /country/station/climsoft/
     builds_bucket = get_bucket("builds")
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     processed_filename = f"dataset_update_{timestamp}.csv"
-    processed_key = f"{region}/{station}/climsoft/{processed_filename}"
+    processed_key = f"{country}/{station}/climsoft/{processed_filename}"
     builds_bucket.put_object(Key=processed_key, Body=result_content)
     
     # Delete the /tmp/processed_dataset.csv, /tmp/latest_dataset.csv, and r_script_path files
@@ -162,12 +162,12 @@ def sync_file_to_bucket(
     logging.info(f"Processed dataset saved to builds bucket as {processed_key}")
     
     # Return the response with processed file information
-    logging.info(f"Processed files for {region}/{station} and stored in builds bucket as {processed_key}")
+    logging.info(f"Processed files for {country}/{station} and stored in builds bucket as {processed_key}")
     logging.info(f"Using R script: {latest_script}")        
 
     return JSONResponse(
         content={
-            "message": f"Processed files for {region}/{station} and stored in builds bucket.",
+            "message": f"Processed files for {country}/{station} and stored in builds bucket.",
             "processed_file": processed_key,
             "script_used": latest_script
         },

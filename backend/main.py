@@ -85,11 +85,11 @@ async def startup_event():
 def upload_file_to_bucket(
     bucket_name: str,
     file: UploadFile = File(...),
-    region: str = Query(..., description="Region name"),
+    country: str = Query(..., description="country name"),
     station: str = Query(..., description="Station name")
 ):
     """
-    Upload a file to the specified S3 bucket, including region and station metadata.
+    Upload a file to the specified S3 bucket, including country and station metadata.
     Only allows CSV or Excel files for the 'landing' bucket.
     Only allows R script files (.R or .r) for the 'scripts' bucket.
     """
@@ -123,13 +123,13 @@ def upload_file_to_bucket(
             )
 
     bucket = get_bucket(bucket_name)
-    s3_key = f"{region}/{station}/climsoft/{upload_filename}"
-    bucket.put_object(Key=s3_key, Body=file.file, Metadata={"region": region, "station": station})
+    s3_key = f"{country}/{station}/climsoft/{upload_filename}"
+    bucket.put_object(Key=s3_key, Body=file.file, Metadata={"country": country, "station": station})
 
     # After successful upload, trigger sync-webhook
     try:
         webhook_url = f"{SYNC_WEBHOOK_URL}/api/webhook/{bucket_name}/sync"
-        params = {"region": region, "station": station}
+        params = {"country": country, "station": station}
         response = requests.post(webhook_url, params=params, timeout=10)
         response.raise_for_status()
         webhook_result = response.json()
@@ -137,7 +137,7 @@ def upload_file_to_bucket(
         webhook_result = {"error": f"Failed to trigger sync-webhook: {e}"}
 
     return {
-        "message": f"Uploaded {upload_filename} to {bucket_name} at {region}/{station}/",
+        "message": f"Uploaded {upload_filename} to {bucket_name} at {country}/{station}/",
         "webhook_result": webhook_result
     }
 
@@ -145,13 +145,13 @@ def upload_file_to_bucket(
 def download_file_from_bucket(
     bucket_name: str,
     filename: str,
-    region: str = Query(..., description="Region name"),
+    country: str = Query(..., description="country name"),
     station: str = Query(..., description="Station name")
 ):
     """
-    Download a file from the specified S3 bucket and region/station path.
+    Download a file from the specified S3 bucket and country/station path.
     """
-    s3_key = f"{region}/{station}/climsoft/{filename}"
+    s3_key = f"{country}/{station}/climsoft/{filename}"
     bucket = get_bucket(bucket_name)
     try:
         obj = bucket.Object(s3_key).get()
@@ -179,21 +179,21 @@ def list_files_in_bucket(bucket_name: str):
 
 @app.get("/api/s3/builds/latest-climate-data")
 def get_latest_builds_csv_as_json(
-    region: str = Query(..., description="Region name"),
+    country: str = Query(..., description="country name"),
     station: str = Query(..., description="Station name")
 ):
     """
-    Download the latest CSV file in the builds S3 bucket for the given region/station,
+    Download the latest CSV file in the builds S3 bucket for the given country/station,
     read it, convert to JSON, and return the data.
     """
     builds_bucket = get_bucket("builds")
-    prefix = f"{region}/{station}/climsoft/"
+    prefix = f"{country}/{station}/climsoft/"
     csv_files = [
         obj for obj in builds_bucket.objects.filter(Prefix=prefix)
         if obj.key.endswith(".csv")
     ]
     if not csv_files:
-        raise HTTPException(status_code=404, detail="No CSV files found in builds bucket for this region/station.")
+        raise HTTPException(status_code=404, detail="No CSV files found in builds bucket for this country/station.")
 
     latest_obj = max(csv_files, key=lambda obj: obj.last_modified)
     obj = builds_bucket.Object(latest_obj.key).get()
