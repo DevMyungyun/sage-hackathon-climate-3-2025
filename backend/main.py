@@ -177,7 +177,7 @@ def list_files_in_bucket(bucket_name: str):
         raise HTTPException(status_code=404, detail=f"Could not list files in {bucket_name}: {e}")
 
 
-@app.get("/api/s3/builds/latest-climate-data")
+@app.get("/api/builds/latest-climate-data")
 def get_latest_builds_csv_as_json(
     country: str = Query(..., description="country name"),
     station: str = Query(..., description="Station name")
@@ -214,7 +214,7 @@ def get_latest_builds_csv_as_json(
 
 
 # TODO: This is for future features to interact with MongoDB
-@app.get("/api/todos/find")
+@app.get("/api/db/find")
 def find_documents():
     """Find all documents in MongoDB collection."""
     docs = list(mongo_collection.find())
@@ -222,31 +222,30 @@ def find_documents():
         doc["_id"] = str(doc["_id"])
     return docs
 
-@app.get("/api/todos")
-def get_todos():
+@app.get("/api/db/feedback/{doc_id}")
+def get_feedback(doc_id: str):
     docs = list(mongo_collection.find())
     for doc in docs:
         doc["_id"] = str(doc["_id"])
     return docs
 
-@app.post("/api/todos/insert")
+@app.post("/api/db/insert/{document}")
 def insert_document(document: dict):
     """Insert a document into MongoDB."""
     result = mongo_collection.insert_one(document)
     return {"inserted_id": str(result.inserted_id)}
 
-@app.delete("/api/todos/{todo_id}")
-def delete_todo(todo_id: str):
+@app.delete("/api/db/{doc_id}")
+def delete_todo(doc_id: str):
     result = mongo_collection.delete_one({"id": todo_id})
     if result.deleted_count == 1:
         return JSONResponse(content="", status_code=204)
     raise HTTPException(status_code=404, detail="Todo not found")
 
-
-@app.put("/api/todos/{todo_id}")
-def update_todo(todo_id: str, data: dict):
+@app.put("/api/db/{doc_id}/{data}")
+def update_todo(doc_id: str, data: dict):
     result = mongo_collection.find_one_and_update(
-        {"id": todo_id},
+        {"id": doc_id},
         {"$set": {"task": data.get("task"), "done": data.get("done")}},
         return_document=True
     )
