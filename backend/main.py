@@ -177,23 +177,23 @@ def list_files_in_bucket(bucket_name: str):
         raise HTTPException(status_code=404, detail=f"Could not list files in {bucket_name}: {e}")
 
 
-@app.get("/api/builds/latest-climate-data")
+@app.get("/api/s3/builds/latest-climate-data/{country}/{district}")
 def get_latest_builds_csv_as_json(
     country: str = Query(..., description="country name"),
-    station: str = Query(..., description="Station name")
+    district: str = Query(..., description="Station name")
 ):
     """
-    Download the latest CSV file in the builds S3 bucket for the given country/station,
+    Download the latest CSV file in the builds S3 bucket for the given country and district,
     read it, convert to JSON, and return the data.
     """
     builds_bucket = get_bucket("builds")
-    prefix = f"{country}/{station}/climsoft/"
+    prefix = f"{country}/{district}/"
     csv_files = [
         obj for obj in builds_bucket.objects.filter(Prefix=prefix)
         if obj.key.endswith(".csv")
     ]
     if not csv_files:
-        raise HTTPException(status_code=404, detail="No CSV files found in builds bucket for this country/station.")
+        raise HTTPException(status_code=404, detail="No CSV files found in builds bucket for this country and district.")
 
     latest_obj = max(csv_files, key=lambda obj: obj.last_modified)
     obj = builds_bucket.Object(latest_obj.key).get()
