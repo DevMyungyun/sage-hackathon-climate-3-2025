@@ -1,4 +1,4 @@
-# sage-hackathon-climate-3-2025
+# Climate Team 3 | Tech for Good Hackathon 2025
 This repository is for Sage Hackathon Climate team 3 in 2025.
 
 ## Bucket Structure
