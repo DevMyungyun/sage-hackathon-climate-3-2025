@@ -1,5 +1,5 @@
 # localstack 
-data
+data/*
 
 # lambda Workspace
 lambda_workspace/output/**

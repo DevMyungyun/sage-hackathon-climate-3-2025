@@ -16,7 +16,7 @@ echo "Installing Python dependencies..."
 pip install -r requirements.txt
 
 echo "Starting LocalStack with Docker Compose..."
-docker compose build --no-cache
+docker compose build #--no-cache
 docker-compose up -d
 
 echo "Waiting for LocalStack to be ready..."
