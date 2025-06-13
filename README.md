@@ -1,6 +1,9 @@
 # Climate Team 3 | Tech for Good Hackathon 2025
 This repository is for Sage Hackathon Climate team 3 in 2025.
 
+## Architecture
+![Screenshot 2025-06-13 at 7 28 41 AM](https://github.com/user-attachments/assets/224eb9ce-2475-42d2-a614-f028d61309f5)
+
 ## Bucket Structure
 
 The platform will need three main buckets:
